@@ -1,4 +1,13 @@
-# 🃏 로그라이크 카드 배틀
+# 🃏 로그라이크 카드 배틀 | Roguelike Card Battle
+
+> 발라트로류 포커 덱빌딩 — 8 라운드·조커 8종  
+> Balatro-style poker deck-builder, 8 rounds
+
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen?style=flat-square)](https://metasongi.github.io/roguelike-card-battle/) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square)
+
+🌐 **Live:** https://metasongi.github.io/roguelike-card-battle/
+
+---
 
 발라트로(Balatro) 스타일의 포커 족보 × 덱빌딩 로그라이크 카드 게임.
 52장 표준 덱으로 족보를 만들고, 조커를 모아 점수를 불려 8라운드를 돌파하세요.
@@ -43,3 +52,9 @@
 - `index.html` 단일 파일 (CSS/JS 인라인, 외부 의존성 없음)
 - 모바일 터치 + PC 마우스 지원, 반응형 레이아웃
 - 최고 기록은 `localStorage`에 저장
+
+---
+
+## English Summary
+
+Balatro-style poker deck-builder, 8 rounds.
