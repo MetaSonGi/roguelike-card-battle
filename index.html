@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>로그라이크 카드 배틀</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    background: #0d1b2a; color: #eaf2f8;
+    min-height: 100vh;
+    user-select: none; -webkit-user-select: none;
+  }
+  #app { max-width: 760px; margin: 0 auto; padding: 12px 12px 28px; }
+  h1 { font-size: 22px; margin: 8px 0 2px; text-align: center; }
+  .subtitle { text-align: center; color: #9fb3c8; font-size: 12px; margin-bottom: 10px; }
+  #status {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px;
+  }
+  .stat {
+    background: #16283d; border: 1px solid #24405e; border-radius: 10px;
+    padding: 8px 6px; text-align: center;
+  }
+  .stat .label { font-size: 11px; color: #9fb3c8; }
+  .stat .value { font-size: 18px; font-weight: 700; }
+  .stat .value.goal { color: #ffd166; }
+  .stat .value.score { color: #7cf5c8; }
+  #jokerbar { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0; min-height: 30px; }
+  .joker {
+    background: #3a2b5c; border: 1px solid #8b5cf6; border-radius: 8px;
+    font-size: 12px; padding: 5px 8px; cursor: default;
+  }
+  .joker b { color: #d6bcfa; }
+  #preview {
+    text-align: center; min-height: 52px; margin: 4px 0;
+    background: #101f33; border-radius: 10px; padding: 8px;
+    border: 1px dashed #2e4a6b;
+  }
+  #preview .handname { font-size: 17px; font-weight: 700; color: #ffd166; }
+  #preview .calc { font-size: 12px; color: #9fb3c8; margin-top: 2px; }
+  #hand {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin: 10px 0 14px; min-height: 108px;
+  }
+  .card {
+    width: 72px; height: 100px; border-radius: 10px;
+    background: #f8fafc; color: #111;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 800; cursor: pointer; position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,.45);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .card .rank { font-size: 24px; line-height: 1; }
+  .card .suit { font-size: 26px; line-height: 1.1; }
+  .card.red { color: #d61f2c; }
+  .card.selected {
+    transform: translateY(-12px);
+    box-shadow: 0 0 0 3px #ffd166, 0 6px 14px rgba(0,0,0,.5);
+  }
+  .card .order {
+    position: absolute; top: 4px; right: 6px;
+    background: #ffd166; color: #111; font-size: 11px; font-weight: 800;
+    width: 18px; height: 18px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+  }
+  .card.selected .order { display: flex; }
+  #actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 6px; }
+  button {
+    font-family: inherit; border: none; border-radius: 12px;
+    padding: 13px 22px; font-size: 16px; font-weight: 800; cursor: pointer;
+    color: #0d1b2a;
+  }
+  button:disabled { opacity: .35; cursor: default; }
+  #btnPlay { background: #ffd166; }
+  #btnDiscard { background: #7cf5c8; }
+  #btnNext { background: #8b5cf6; color: #fff; }
+  .hint { text-align: center; font-size: 12px; color: #9fb3c8; margin-top: 8px; line-height: 1.6; }
+  #shop { margin-top: 10px; }
+  #shop h2 { text-align: center; font-size: 18px; margin: 6px 0; }
+  .shop-grid { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .shop-card {
+    background: #241a3f; border: 2px solid #8b5cf6; border-radius: 12px;
+    width: 30%; min-width: 150px; padding: 12px 8px; text-align: center; cursor: pointer;
+    transition: transform .12s ease;
+  }
+  .shop-card:hover { transform: scale(1.04); }
+  .shop-card .jname { font-weight: 800; color: #d6bcfa; font-size: 14px; margin-bottom: 6px; }
+  .shop-card .jdesc { font-size: 12px; color: #cbd5e1; line-height: 1.5; }
+  #overlay {
+    position: fixed; inset: 0; background: rgba(4,10,18,.88);
+    display: flex; align-items: center; justify-content: center; z-index: 50;
+  }
+  #overlay[hidden], #shop[hidden] { display: none; }
+  .panel {
+    background: #16283d; border: 1px solid #2e4a6b; border-radius: 16px;
+    padding: 28px 26px; text-align: center; max-width: 88vw;
+  }
+  .panel h2 { margin: 0 0 10px; font-size: 24px; }
+  .panel p { color: #cbd5e1; font-size: 14px; line-height: 1.7; }
+  .panel .big { font-size: 40px; margin-bottom: 6px; }
+  #toast {
+    position: fixed; left: 50%; top: 38%; transform: translate(-50%,-50%);
+    background: rgba(10,20,34,.95); border: 2px solid #ffd166; border-radius: 14px;
+    padding: 14px 24px; text-align: center; z-index: 60; display: none;
+    pointer-events: none;
+  }
+  #toast .t-hand { font-size: 20px; font-weight: 800; color: #ffd166; }
+  #toast .t-score { font-size: 15px; color: #7cf5c8; margin-top: 4px; }
+  .log { text-align: center; font-size: 12px; color: #7d93ab; min-height: 18px; margin-top: 6px; }
+  @media (max-width: 480px) {
+    .card { width: 62px; height: 90px; }
+    .card .rank { font-size: 20px; }
+    .card .suit { font-size: 22px; }
+    button { padding: 12px 16px; font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>🃏 로그라이크 카드 배틀</h1>
+  <div class="subtitle">포커 족보 × 덱빌딩 로그라이크 · 최고 기록 <span id="best">0</span>라운드</div>
+
+  <div id="status"></div>
+  <div id="jokerbar"></div>
+
+  <div id="preview"><span style="color:#7d93ab;font-size:13px">카드를 눌러 선택하세요 (최대 5장)</span></div>
+
+  <div id="hand"></div>
+
+  <div id="actions">
+    <button id="btnPlay">플레이</button>
+    <button id="btnDiscard">버리기</button>
+  </div>
+  <div class="log" id="log"></div>
+
+  <div id="shop" hidden>
+    <h2>🛒 상점 — 조커 1장 선택</h2>
+    <div class="shop-grid" id="shopGrid"></div>
+  </div>
+
+  <div class="hint">
+    점수 = 칩(족보 기본점 + 카드 숫자 합) × 멀트(족보 배율)<br>
+    매 라운드 플레이 4회 · 버리기 3회 · 목표 점수를 넘기면 다음 라운드 (총 8라운드)
+  </div>
+</div>
+
+<div id="overlay" hidden><div class="panel" id="panel"></div></div>
+<div id="toast"><div class="t-hand" id="toastHand"></div><div class="t-score" id="toastScore"></div></div>
+
+<script>
+"use strict";
+/* ============ 기본 정의 ============ */
+const SUITS = ["♠", "♥", "♦", "♣"];
+const RANKS = {11:"J", 12:"Q", 13:"K", 14:"A"};
+const rankLabel = r => RANKS[r] || String(r);
+const cardChips = c => (c.r === 14 ? 11 : (c.r >= 11 ? 10 : c.r));
+
+const HANDS = {
+  straight_flush: { name: "스트레이트 플러시", chip: 100, mult: 8 },
+  four:           { name: "포카드",             chip: 60,  mult: 7 },
+  full_house:     { name: "풀하우스",           chip: 40,  mult: 4 },
+  flush:          { name: "플러시",             chip: 35,  mult: 4 },
+  straight:       { name: "스트레이트",         chip: 30,  mult: 4 },
+  three:          { name: "트리플",             chip: 30,  mult: 3 },
+  two_pair:       { name: "투페어",             chip: 20,  mult: 2 },
+  pair:           { name: "원페어",             chip: 10,  mult: 2 },
+  high:           { name: "하이카드",           chip: 5,   mult: 1 }
+};
+
+const TARGETS = [300, 500, 750, 1050, 1400, 1850, 2350, 2950];
+const MAX_ROUND = 8;
+const HAND_SIZE = 8, PLAYS = 4, DISCARDS = 3;
+
+/* ============ 조커 풀 ============ */
+const JOKER_POOL = [
+  { id: "pair_master", name: "페어 마스터", desc: "페어 계열(원페어·투페어·트리플·풀하우스·포카드) 플레이 시 멀트 +4",
+    apply: (c, i) => (["pair","two_pair","three","full_house","four"].includes(i.key) ? { mult: 4 } : {}) },
+  { id: "heart_lover", name: "하트 러버", desc: "플레이한 ♥ 카드 1장당 칩 +10",
+    apply: c => ({ chips: c.filter(x => x.s === 1).length * 10 }) },
+  { id: "straight_killer", name: "스트레이트 킬러", desc: "스트레이트 이상(스트레이트·스플) 플레이 시 멀트 ×2",
+    apply: (c, i) => (["straight","straight_flush"].includes(i.key) ? { xmult: 2 } : {}) },
+  { id: "flush_hunter", name: "플러시 헌터", desc: "플러시 이상(플러시·스플) 플레이 시 칩 +25",
+    apply: (c, i) => (["flush","straight_flush"].includes(i.key) ? { chips: 25 } : {}) },
+  { id: "ace_king", name: "에이스 킹", desc: "플레이한 A 1장당 칩 +15",
+    apply: c => ({ chips: c.filter(x => x.r === 14).length * 15 }) },
+  { id: "quads_breaker", name: "포카드 브레이커", desc: "포카드 플레이 시 멀트 ×3",
+    apply: (c, i) => (i.key === "four" ? { xmult: 3 } : {}) },
+  { id: "high_roller", name: "하이롤러", desc: "하이카드(노페어) 플레이 시 칩 +30",
+    apply: (c, i) => (i.key === "high" ? { chips: 30 } : {}) },
+  { id: "club_fighter", name: "클럽 파이터", desc: "플레이한 ♣ 카드 1장당 멀트 +1",
+    apply: c => ({ mult: c.filter(x => x.s === 3).length }) }
+];
+
+/* ============ 게임 상태 ============ */
+const S = {
+  round: 1, target: 0, roundScore: 0,
+  deck: [], hand: [], pile: [],
+  plays: PLAYS, discards: DISCARDS,
+  sel: [],            // 선택된 hand 인덱스 (선택 순서)
+  jokers: [],
+  phase: "play"       // play | shop | over
+};
+
+function newDeck() {
+  const d = [];
+  for (let s = 0; s < 4; s++) for (let r = 2; r <= 14; r++) d.push({ r, s });
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+
+function draw(n) {
+  while (S.hand.length < n) {
+    if (S.deck.length === 0) {
+      if (S.pile.length === 0) break;
+      S.deck = S.pile; S.pile = [];
+      for (let i = S.deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [S.deck[i], S.deck[j]] = [S.deck[j], S.deck[i]];
+      }
+    }
+    S.hand.push(S.deck.pop());
+  }
+}
+
+/* ============ 족보 판정 ============ */
+function evalHand(cards) {
+  const n = cards.length;
+  const cnt = {};
+  for (const c of cards) cnt[c.r] = (cnt[c.r] || 0) + 1;
+  const groups = Object.values(cnt).sort((a, b) => b - a);
+
+  let straight = false, flush = false;
+  if (n === 5) {
+    flush = cards.every(c => c.s === cards[0].s);
+    const rs = [...new Set(cards.map(c => c.r))].sort((a, b) => a - b);
+    if (rs.length === 5) {
+      if (rs[4] - rs[0] === 4) straight = true;
+      else if (rs[0] === 2 && rs[1] === 3 && rs[2] === 4 && rs[3] === 5 && rs[4] === 14) straight = true; // A-5 휠
+    }
+  }
+
+  let key = "high";
+  if (n === 5 && straight && flush) key = "straight_flush";
+  else if (groups[0] === 4) key = "four";
+  else if (groups[0] === 3 && groups[1] === 2) key = "full_house";
+  else if (n === 5 && flush) key = "flush";
+  else if (n === 5 && straight) key = "straight";
+  else if (groups[0] === 3) key = "three";
+  else if (groups[0] === 2 && groups[1] === 2) key = "two_pair";
+  else if (groups[0] === 2) key = "pair";
+  return { key, ...HANDS[key] };
+}
+
+/* ============ 점수 계산 ============ */
+function scorePlay(cards) {
+  const h = evalHand(cards);
+  const info = { key: h.key };
+  let chips = h.chip + cards.reduce((a, c) => a + cardChips(c), 0);
+  let mult = h.mult, xmult = 1;
+  for (const j of S.jokers) {
+    const r = j.apply(cards, info) || {};
+    chips += r.chips || 0;
+    mult += r.mult || 0;
+    xmult *= r.xmult || 1;
+  }
+  const totalMult = mult * xmult;
+  return { hand: h, chips, mult: totalMult, score: chips * totalMult };
+}
+
+const selCards = () => S.sel.map(i => S.hand[i]);
+
+/* ============ 렌더링 ============ */
+const $ = id => document.getElementById(id);
+
+function render() {
+  // 상태
+  $("status").innerHTML = `
+    <div class="stat"><div class="label">라운드</div><div class="value">${S.round} / ${MAX_ROUND}</div></div>
+    <div class="stat"><div class="label">목표 점수</div><div class="value goal">${S.target.toLocaleString()}</div></div>
+    <div class="stat"><div class="label">현재 점수</div><div class="value score">${S.roundScore.toLocaleString()}</div></div>
+    <div class="stat"><div class="label">남은 플레이</div><div class="value">${S.plays}</div></div>
+    <div class="stat"><div class="label">남은 버리기</div><div class="value">${S.discards}</div></div>
+    <div class="stat"><div class="label">남은 덱</div><div class="value">${S.deck.length + S.pile.length}</div></div>`;
+
+  // 조커
+  $("jokerbar").innerHTML = S.jokers.length
+    ? S.jokers.map(j => `<span class="joker" title="${j.desc}">🃏 <b>${j.name}</b></span>`).join("")
+    : `<span style="font-size:12px;color:#5b7186">조커 없음 — 라운드 클리어 후 상점에서 획득</span>`;
+
+  // 손패
+  const handEl = $("hand");
+  handEl.innerHTML = "";
+  S.hand.forEach((c, i) => {
+    const d = document.createElement("div");
+    const selIdx = S.sel.indexOf(i);
+    d.className = "card" + (c.s === 1 || c.s === 2 ? " red" : "") + (selIdx >= 0 ? " selected" : "");
+    d.innerHTML = `<span class="order">${selIdx + 1}</span><span class="rank">${rankLabel(c.r)}</span><span class="suit">${SUITS[c.s]}</span>`;
+    d.addEventListener("click", () => toggleSelect(i));
+    handEl.appendChild(d);
+  });
+
+  // 족보 미리보기
+  const pv = $("preview");
+  if (S.sel.length > 0 && S.phase === "play") {
+    const cards = selCards();
+    const res = scorePlay(cards);
+    pv.innerHTML = `<div class="handname">${res.hand.name}</div>
+      <div class="calc">${res.chips.toLocaleString()} 칩 × ${res.mult} 멀트 = <b style="color:#7cf5c8">${res.score.toLocaleString()}점</b> 예상</div>`;
+  } else {
+    pv.innerHTML = `<span style="color:#7d93ab;font-size:13px">카드를 눌러 선택하세요 (최대 5장)</span>`;
+  }
+
+  // 버튼
+  const n = S.sel.length;
+  $("btnPlay").disabled = !(S.phase === "play" && n > 0 && S.plays > 0);
+  $("btnDiscard").disabled = !(S.phase === "play" && n > 0 && S.discards > 0);
+  $("btnPlay").textContent = `플레이${n > 0 ? ` (${n}장)` : ""}`;
+  $("btnDiscard").textContent = `버리기${n > 0 ? ` (${n}장)` : ""}`;
+
+  $("best").textContent = getBest();
+}
+
+function toggleSelect(i) {
+  if (S.phase !== "play") return;
+  const k = S.sel.indexOf(i);
+  if (k >= 0) S.sel.splice(k, 1);
+  else if (S.sel.length < 5) S.sel.push(i);
+  render();
+}
+
+function toast(handName, scoreText, ms = 1300) {
+  $("toastHand").textContent = handName;
+  $("toastScore").textContent = scoreText;
+  $("toast").style.display = "block";
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { $("toast").style.display = "none"; }, ms);
+}
+
+function log(msg) { $("log").textContent = msg; }
+
+/* ============ 게임 흐름 ============ */
+function getBest() {
+  return parseInt(localStorage.getItem("rcb_best") || "0", 10);
+}
+function setBest(v) {
+  if (v > getBest()) localStorage.setItem("rcb_best", String(v));
+}
+
+function startRound() {
+  S.target = TARGETS[S.round - 1];
+  S.roundScore = 0;
+  S.deck = newDeck(); S.hand = []; S.pile = [];
+  S.plays = PLAYS; S.discards = DISCARDS;
+  S.sel = []; S.phase = "play";
+  $("shop").hidden = true;
+  draw(HAND_SIZE);
+  log(`라운드 ${S.round} 시작 — 목표 ${S.target.toLocaleString()}점`);
+  render();
+}
+
+function doPlay() {
+  if (S.phase !== "play" || S.sel.length === 0 || S.plays <= 0) return;
+  const cards = selCards();
+  const res = scorePlay(cards);
+  // 손패에서 제거 → 사용 더미
+  const idxs = [...S.sel].sort((a, b) => b - a);
+  for (const i of idxs) S.pile.push(S.hand.splice(i, 1)[0]);
+  S.sel = [];
+  S.plays--;
+  S.roundScore += res.score;
+  draw(HAND_SIZE);
+  toast(`${res.hand.name}!`, `+${res.score.toLocaleString()}점 (${res.chips} × ${res.mult})`);
+  log(`${res.hand.name} → ${res.score.toLocaleString()}점 획득 (누적 ${S.roundScore.toLocaleString()}점)`);
+  if (S.roundScore >= S.target) {
+    setBest(S.round);
+    openShop();
+  } else if (S.plays === 0) {
+    gameOver();
+  }
+  render();
+}
+
+function doDiscard() {
+  if (S.phase !== "play" || S.sel.length === 0 || S.discards <= 0) return;
+  const idxs = [...S.sel].sort((a, b) => b - a);
+  for (const i of idxs) S.pile.push(S.hand.splice(i, 1)[0]);
+  S.sel = [];
+  S.discards--;
+  draw(HAND_SIZE);
+  log(`카드를 버리고 새로 뽑았습니다 (남은 버리기 ${S.discards}회)`);
+  render();
+}
+
+function openShop() {
+  S.phase = "shop";
+  const avail = JOKER_POOL.filter(j => !S.jokers.some(o => o.id === j.id));
+  const picks = [];
+  const pool = [...avail];
+  while (picks.length < 3 && pool.length > 0) {
+    picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  }
+  const grid = $("shopGrid");
+  grid.innerHTML = "";
+  if (picks.length === 0) {
+    grid.innerHTML = `<p style="color:#9fb3c8">모든 조커를 보유 중입니다!</p>`;
+  } else {
+    for (const j of picks) {
+      const d = document.createElement("div");
+      d.className = "shop-card";
+      d.innerHTML = `<div class="jname">🃏 ${j.name}</div><div class="jdesc">${j.desc}</div>`;
+      d.addEventListener("click", () => pickJoker(j));
+      grid.appendChild(d);
+    }
+  }
+  $("shop").hidden = false;
+  render();
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+}
+
+function pickJoker(j) {
+  S.jokers.push(j);
+  $("shop").hidden = true;
+  if (S.round >= MAX_ROUND) {
+    victory();
+    return;
+  }
+  S.round++;
+  toast("🃏 조커 획득!", j.name, 1100);
+  setTimeout(startRound, 700);
+  render();
+}
+
+function gameOver() {
+  S.phase = "over";
+  setBest(Math.max(getBest(), S.round - 1)); // 클리어한 라운드까지 기록
+  showPanel("💀 게임 오버",
+    `라운드 ${S.round}에서 목표 ${S.target.toLocaleString()}점을 넘지 못했습니다.<br>도달 라운드: <b>${S.round}</b> · 최고 기록: <b>${getBest()}라운드</b>`);
+}
+
+function victory() {
+  S.phase = "over";
+  setBest(MAX_ROUND);
+  showPanel("🏆 승리!",
+    `8라운드(앤티) 돌파 성공!<br>보유 조커 ${S.jokers.length}장 · 최고 기록: <b>${getBest()}라운드</b>`);
+}
+
+function showPanel(title, html) {
+  $("panel").innerHTML = `<div class="big">${title.split(" ")[0]}</div><h2>${title}</h2><p>${html}</p>
+    <button id="btnNext" style="margin-top:12px">다시 시작</button>`;
+  $("overlay").hidden = false;
+  $("btnNext").addEventListener("click", () => {
+    $("overlay").hidden = true;
+    S.round = 1; S.jokers = [];
+    startRound();
+  });
+  render();
+}
+
+$("btnPlay").addEventListener("click", doPlay);
+$("btnDiscard").addEventListener("click", doDiscard);
+
+/* 시작 */
+startRound();
+</script>
+</body>
+</html>
