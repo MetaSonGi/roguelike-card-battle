@@ -109,6 +109,21 @@
   #toast .t-hand { font-size: 20px; font-weight: 800; color: #ffd166; }
   #toast .t-score { font-size: 15px; color: #7cf5c8; margin-top: 4px; }
   .log { text-align: center; font-size: 12px; color: #7d93ab; min-height: 18px; margin-top: 6px; }
+  .howto { max-width: 760px; margin: 0 auto 48px; padding: 0 12px; }
+  .howto h2 { font-size: 18px; margin: 26px 0 12px; text-align: center; }
+  .howto .card-box {
+    background: #101f33; border: 1px solid #24405e; border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  .howto h3 { font-size: 15px; color: #ffd166; margin: 0 0 8px; }
+  .howto p, .howto li { font-size: 13px; color: #c6d5e5; line-height: 1.7; }
+  .howto p { margin: 0; }
+  .howto ul { margin: 0; padding-left: 18px; }
+  .howto b { color: #eaf2f8; }
+  .howto table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .howto th, .howto td { padding: 6px 8px; border-bottom: 1px solid #24405e; text-align: center; color: #c6d5e5; }
+  .howto th { color: #9fb3c8; font-weight: 600; }
+  .howto td:first-child { text-align: left; color: #eaf2f8; font-weight: 600; }
   @media (max-width: 480px) {
     .card { width: 62px; height: 90px; }
     .card .rank { font-size: 20px; }
@@ -145,6 +160,67 @@
     매 라운드 플레이 4회 · 버리기 3회 · 목표 점수를 넘기면 다음 라운드 (총 8라운드)
   </div>
 </div>
+
+<section class="howto">
+  <h2>📖 게임 방법</h2>
+
+  <div class="card-box">
+    <h3>🎯 목표</h3>
+    <p>총 <b>8라운드(앤티)</b>를 돌파하세요. 매 라운드 목표 점수를 넘기면 다음 라운드로 진출하고, 넘기지 못하면 게임 오버! 목표 점수는 라운드가 오를수록 높아집니다.</p>
+  </div>
+
+  <div class="card-box">
+    <h3>🃏 플레이 방법</h3>
+    <ul>
+      <li>손패 8장 중 카드를 눌러 <b>최대 5장</b>까지 선택</li>
+      <li><b>플레이</b>: 선택한 카드로 포커 족보를 만들어 점수 획득 (라운드당 4회)</li>
+      <li><b>버리기</b>: 안 쓰는 카드를 버리고 새 카드 받기 (라운드당 3회)</li>
+      <li>점수 = <b>칩</b>(족보 기본점 + 카드 숫자 합) × <b>멀트</b>(족보 배율)</li>
+      <li>카드를 고르면 족보 이름과 예상 점수가 미리보기에 표시됩니다</li>
+    </ul>
+  </div>
+
+  <div class="card-box">
+    <h3>🏆 포커 족보표</h3>
+    <table>
+      <tr><th>족보</th><th>칩</th><th>멀트</th></tr>
+      <tr><td>스트레이트 플러시</td><td>100</td><td>×8</td></tr>
+      <tr><td>포카드</td><td>60</td><td>×7</td></tr>
+      <tr><td>풀하우스</td><td>40</td><td>×4</td></tr>
+      <tr><td>플러시</td><td>35</td><td>×4</td></tr>
+      <tr><td>스트레이트</td><td>30</td><td>×4</td></tr>
+      <tr><td>트리플</td><td>30</td><td>×3</td></tr>
+      <tr><td>투페어</td><td>20</td><td>×2</td></tr>
+      <tr><td>원페어</td><td>10</td><td>×2</td></tr>
+      <tr><td>하이카드</td><td>5</td><td>×1</td></tr>
+    </table>
+  </div>
+
+  <div class="card-box">
+    <h3>🃏 조커 (총 8종)</h3>
+    <p>라운드 클리어 후 상점에서 조커 1장을 선택할 수 있습니다. 조커는 플레이할 때마다 자동으로 발동돼요.</p>
+    <ul>
+      <li><b>페어 마스터</b> — 페어 계열 플레이 시 멀트 +4</li>
+      <li><b>하트 러버</b> — 플레이한 ♥ 1장당 칩 +10</li>
+      <li><b>스트레이트 킬러</b> — 스트레이트 이상 플레이 시 멀트 ×2</li>
+      <li><b>플러시 헌터</b> — 플러시 이상 플레이 시 칩 +25</li>
+      <li><b>에이스 킹</b> — 플레이한 A 1장당 칩 +15</li>
+      <li><b>포카드 브레이커</b> — 포카드 플레이 시 멀트 ×3</li>
+      <li><b>하이롤러</b> — 하이카드 플레이 시 칩 +30</li>
+      <li><b>클럽 파이터</b> — 플레이한 ♣ 1장당 멀트 +1</li>
+    </ul>
+  </div>
+
+  <div class="card-box">
+    <h3>💡 공략 팁</h3>
+    <ul>
+      <li>×2·×3 같은 <b>멀트 배율 조커</b>가 후반 점수 폭발의 핵심이에요</li>
+      <li>조커 시너지를 노려보세요 — 예: 스트레이트 킬러 + 스트레이트 위주 플레이</li>
+      <li>버리기는 아껴뒀다가 원하는 족보를 만들 때 몰아서 사용</li>
+      <li>숫자가 높은 카드(J·Q·K·A)는 칩이 높아서 하이카드 싸움에서도 유리</li>
+    </ul>
+  </div>
+</section>
 
 <div id="overlay" hidden><div class="panel" id="panel"></div></div>
 <div id="toast"><div class="t-hand" id="toastHand"></div><div class="t-score" id="toastScore"></div></div>
